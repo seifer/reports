@@ -24,3 +24,11 @@ import:
   version: a97903d8456938a31ce3cb7d58ad3f378f951f24
 - package: github.com/go-logfmt/logfmt
   version: v0.3.0
+- package: github.com/pkg/errors
+  version: v0.8.0
+- package: github.com/go-stack/stack
+  version: v1.5.2
+- package: github.com/mattn/go-colorable
+  version: v0.0.7
+- package: github.com/fatih/color
+  version: v1.4.1

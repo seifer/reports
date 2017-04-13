@@ -1,50 +1,79 @@
 package benchmarks
 
 import (
-	"io/ioutil"
 	"testing"
-	"time"
 
-	logkit "github.com/go-kit/kit/log"
-	logzap "go.uber.org/zap"
+	"go.uber.org/zap"
 )
 
-func BenchmarkZap(b *testing.B) {
-	logger := logzap.NewNop()
-
-	b.ResetTimer()
-
-	b.RunParallel(func(pb *testing.PB) {
-		for pb.Next() {
-			logger.Info("Test",
-				logzap.Int("attempt", 1),
-				logzap.String("url", "string"),
-				logzap.Duration("backoff", time.Second),
-			)
-		}
+func BenchmarkAddingFields(b *testing.B) {
+	b.Run("Zap", func(b *testing.B) {
+		logger := newZapLogger(zap.DebugLevel)
+		b.ResetTimer()
+		b.RunParallel(func(pb *testing.PB) {
+			for pb.Next() {
+				logger.Info(getMessage(0), fakeFields()...)
+			}
+		})
 	})
-}
 
-func BenchmarkZapSugared(b *testing.B) {
-	logger := logzap.NewNop().Sugar()
-
-	b.ResetTimer()
-
-	b.RunParallel(func(pb *testing.PB) {
-		for pb.Next() {
-			logger.Info("attempt", 1, "url", "string", "backoff", time.Second)
-		}
+	b.Run("Zap.Sugar", func(b *testing.B) {
+		logger := newZapLogger(zap.DebugLevel).Sugar()
+		b.ResetTimer()
+		b.RunParallel(func(pb *testing.PB) {
+			for pb.Next() {
+				logger.Infow(getMessage(0), fakeSugarFields()...)
+			}
+		})
 	})
-}
 
-func BenchmarkGoKit(b *testing.B) {
-	logger := logkit.NewJSONLogger(logkit.NewSyncWriter(ioutil.Discard))
+	b.Run("apex/log", func(b *testing.B) {
+		logger := newApexLog()
+		b.ResetTimer()
+		b.RunParallel(func(pb *testing.PB) {
+			for pb.Next() {
+				logger.WithFields(fakeApexFields()).Info(getMessage(0))
+			}
+		})
+	})
 
-	b.ResetTimer()
+	b.Run("go-kit/kit/log", func(b *testing.B) {
+		logger := newKitLog()
+		b.ResetTimer()
+		b.RunParallel(func(pb *testing.PB) {
+			for pb.Next() {
+				logger.Log(fakeSugarFields()...)
+			}
+		})
+	})
 
-	b.RunParallel(func(pb *testing.PB) {
-		for pb.Next() {
-			logger.Log("attempt", 1, "url", "string", "backoff", time.Second)
-		}
+	b.Run("inconshreveable/log15", func(b *testing.B) {
+		logger := newLog15()
+		b.ResetTimer()
+		b.RunParallel(func(pb *testing.PB) {
+			for pb.Next() {
+				logger.Info(getMessage(0), fakeSugarFields()...)
+			}
+		})
+	})
+
+	b.Run("sirupsen/logrus", func(b *testing.B) {
+		logger := newLogrus()
+		b.ResetTimer()
+		b.RunParallel(func(pb *testing.PB) {
+			for pb.Next() {
+				logger.WithFields(fakeLogrusFields()).Info(getMessage(0))
+			}
+		})
+	})
+
+	b.Run("go.pedge.io/lion", func(b *testing.B) {
+		logger := newLion()
+		b.ResetTimer()
+		b.RunParallel(func(pb *testing.PB) {
+			for pb.Next() {
+				logger.WithFields(fakeLogrusFields()).Infof(getMessage(0))
+			}
+		})
 	})
 }

@@ -32,3 +32,4 @@ import:
   version: v0.0.7
 - package: github.com/fatih/color
   version: v1.4.1
+- package: github.com/seifer/go-hpwriter

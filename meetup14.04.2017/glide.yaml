@@ -33,3 +33,4 @@ import:
 - package: github.com/fatih/color
   version: v1.4.1
 - package: github.com/seifer/go-hpwriter
+- package: go.pedge.io/lion
